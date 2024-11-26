@@ -16,8 +16,7 @@ Sign-Language-Translator/
 │   ├── model.py
 │   ├── train.py
 │   ├── evaluate.py
-│   ├── predict.py
-│   └── utils.py
+│   └── predict.py
 └── main.py
 ```
 
