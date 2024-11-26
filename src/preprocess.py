@@ -2,6 +2,7 @@ import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
 
+
 def load_and_preprocess_data(train_path=None, test_path=None):
     # Load test data if train_path is None
     if train_path:
@@ -27,3 +28,5 @@ def load_and_preprocess_data(train_path=None, test_path=None):
         raise ValueError("Test path is required for evaluation or prediction.")
 
     return train_images, train_labels, val_images, val_labels, test_images, test_labels
+
+
