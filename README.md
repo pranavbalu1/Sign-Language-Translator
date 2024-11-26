@@ -11,7 +11,7 @@ Sign-Language-Translator/
 │   └── sign_mnist_test.csv
 ├── saved_models/
 │   └── sign_language_model.pth
-├── scripts/
+├── src/
 │   ├── preprocess.py
 │   ├── model.py
 │   ├── train.py
@@ -90,7 +90,7 @@ The main entry point for running the project. It manages different operations li
 
 ---
 
-### **2. `scripts/preprocess.py`**
+### **2. `src/preprocess.py`**
 
 This file is responsible for loading and preprocessing the dataset. It reads the CSV files, scales the pixel values, and reshapes the data to be used by the model.
 
@@ -108,7 +108,7 @@ This file is responsible for loading and preprocessing the dataset. It reads the
 
 ---
 
-### **3. `scripts/model.py`**
+### **3. `src/model.py`**
 
 This file defines the **Convolutional Neural Network (CNN)** model architecture. The model consists of convolutional layers followed by fully connected layers to classify hand gestures.
 
@@ -123,7 +123,7 @@ This file defines the **Convolutional Neural Network (CNN)** model architecture.
 
 ---
 
-### **4. `scripts/train.py`**
+### **4. `src/train.py`**
 
 This file contains the code for training the model. It defines the loss function, optimizer, and the training loop.
 
@@ -141,7 +141,7 @@ This file contains the code for training the model. It defines the loss function
 
 ---
 
-### **5. `scripts/evaluate.py`**
+### **5. `src/evaluate.py`**
 
 This file is responsible for evaluating the trained model on the test dataset. It calculates accuracy and other performance metrics.
 
@@ -157,7 +157,7 @@ This file is responsible for evaluating the trained model on the test dataset. I
 
 ---
 
-### **6. `scripts/predict.py`**
+### **6. `src/predict.py`**
 
 This file handles the task of predicting a hand gesture for a given test image. It takes an image and predicts the corresponding label.
 
@@ -172,12 +172,6 @@ This file handles the task of predicting a hand gesture for a given test image. 
 
 - You can adjust the `image_index` to predict different images.
 - Modify the input format if you use a custom image format.
-
----
-
-### **7. `scripts/utils.py`**
-
-This is a utility file containing helper functions (if any are needed). It can be used to define functions that are used across multiple scripts.
 
 
 
