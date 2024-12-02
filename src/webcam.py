@@ -3,71 +3,63 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from model import CNN
-import torch.nn.functional as F
-import sys
-import os
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Paths
+MODEL_PATH = "saved_models/sign_language_model.pth"
+LABELS = [chr(i) for i in range(65, 91)] + ["del", "space", "nothing"]  # A-Z, delete, space, nothing
 
-# Define label-to-letter mapping
-label_to_letter = {
-    0: "A", 1: "B", 2: "C", 3: "D", 4: "E",
-    5: "F", 6: "G", 7: "H", 8: "I", 9: "J",
-    10: "K", 11: "L", 12: "M", 13: "N", 14: "O",
-    15: "P", 16: "Q", 17: "R", 18: "S", 19: "T",
-    20: "U", 21: "V", 22: "W", 23: "X", 24: "Y"
-}
+# Device configuration
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the trained model
-model = CNN()
-model.load_state_dict(torch.load("saved_models/sign_language_model.pth"))
-model.eval()
+def load_model():
+    model = CNN(num_classes=len(LABELS)).to(device)
+    model.load_state_dict(torch.load(MODEL_PATH))
+    model.eval()
+    return model
 
-# Define preprocessing for the webcam frames
-transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1),
-    transforms.Resize((28, 28)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
-])
+# Preprocessing for webcam frames
+def preprocess_frame(frame):
+    transform = transforms.Compose([
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Resize((28, 28)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,))
+    ])
+    pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    return transform(pil_image).unsqueeze(0).to(device)
 
-# Initialize the webcam
-cap = cv2.VideoCapture(0)
-if not cap.isOpened():
-    print("Error: Could not access the webcam.")
-    exit()
+# Main function for webcam recognition
+def main():
+    model = load_model()
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+    cap = cv2.VideoCapture(0)  # Open webcam
 
-    # Convert OpenCV frame (numpy.ndarray) to PIL Image
-    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    frame_pil = Image.fromarray(frame_gray)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-    # Apply transformations
-    frame_tensor = transform(frame_pil).unsqueeze(0)
+        # Preprocess the frame
+        input_tensor = preprocess_frame(frame)
 
-    # Make a prediction
-    with torch.no_grad():
-        output = model(frame_tensor)
-        _, predicted = torch.max(output, 1)
-        predicted_label = predicted.item()
-        predicted_sign = label_to_letter.get(predicted_label, "Unknown")
+        # Make a prediction
+        with torch.no_grad():
+            output = model(input_tensor)
+            _, predicted = torch.max(output, 1)
+            predicted_label = LABELS[predicted.item()]
 
-        # Calculate confidence
-        probabilities = F.softmax(output, dim=1)
-        confidence = torch.max(probabilities).item()
+        # Display the prediction on the frame
+        cv2.putText(frame, f"Prediction: {predicted_label}", (10, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.imshow("Sign Language Translator", frame)
 
-    # Display the prediction on the frame
-    cv2.rectangle(frame, (5, 5), (300, 60), (0, 0, 0), -1)  # Black background
-    cv2.putText(frame, f"Prediction: {predicted_sign} ({confidence:.2f})", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-    cv2.imshow("Sign Language Translator", frame)
+        # Press 'q' to quit
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    # Press 'q' to quit
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    cap.release()
+    cv2.destroyAllWindows()
 
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    main()
