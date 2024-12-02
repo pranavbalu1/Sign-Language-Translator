@@ -1,8 +1,13 @@
 import argparse
+import os
 from src.train import train_model
 from src.evaluate import evaluate_model
 from src.predict import make_prediction
 from src.preprocess import load_and_preprocess_data
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def main():
     parser = argparse.ArgumentParser(description="Sign Language Recognition Pipeline")
@@ -18,25 +23,35 @@ def main():
                         help="Index of the test image to use for prediction (only for 'predict' mode).")
     args = parser.parse_args()
 
+    # Check file paths
+    if args.mode in ['train', 'evaluate'] and not os.path.exists(args.train_path):
+        raise FileNotFoundError(f"Training dataset not found at {args.train_path}")
+    if args.mode in ['evaluate', 'predict'] and not os.path.exists(args.test_path):
+        raise FileNotFoundError(f"Test dataset not found at {args.test_path}")
+    if args.mode in ['evaluate', 'predict'] and not os.path.exists(args.model_path):
+        raise FileNotFoundError(f"Model not found at {args.model_path}")
+
     if args.mode == 'train':
-        print("Starting training...")
+        logger.info("Starting training...")
         train_model(args.train_path, args.test_path, args.model_path)
-        print("Training completed.")
+        logger.info("Training completed.")
 
     elif args.mode == 'evaluate':
-        print("Starting evaluation...")
+        logger.info("Starting evaluation...")
         evaluate_model(args.model_path, args.test_path)
-        print("Evaluation completed.")
+        logger.info("Evaluation completed.")
 
     elif args.mode == 'predict':
-        print("Starting prediction...")
+        logger.info("Starting prediction...")
         # Load test data and preprocess it
         _, _, _, _, test_images, test_labels = load_and_preprocess_data(None, args.test_path)
+        if args.image_index < 0 or args.image_index >= len(test_images):
+            raise IndexError(f"Image index {args.image_index} is out of bounds.")
         # Use the specified image index for prediction
         test_image = test_images[args.image_index]
         test_label = test_labels[args.image_index].item()
         make_prediction(args.model_path, test_image, test_label)
-        print("Prediction completed.")
+        logger.info("Prediction completed.")
 
 if __name__ == "__main__":
     main()
