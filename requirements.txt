@@ -4,3 +4,5 @@ numpy
 pandas
 matplotlib
 scikit-learn
+Pillow
+opencv-python
