@@ -10,9 +10,12 @@ test_data = pd.read_csv(test_path)
 labels = test_data['label']
 pixels = test_data.iloc[:, 1:]  # All columns except 'label'
 
-# View the first few rows
-print("Test Data Sample:")
-print(test_data.head())
+# Create a dictionary for mapping labels to letters
+# Assuming labels 0-25 correspond to A-Z (excluding 'J' and 'Z' as they require motion)
+label_to_letter = {i: chr(65 + i) for i in range(26)}  # 65 is the ASCII value of 'A'
+
+# Initialize the index
+index = [0]
 
 # Function to visualize a single test case
 def visualize_test_case(index):
@@ -21,32 +24,26 @@ def visualize_test_case(index):
     Args:
         index (int): The index of the test case to visualize.
     """
-    label = labels[index]
+    numeric_label = labels[index]
+    letter_label = label_to_letter.get(numeric_label, "?")  # Use '?' for undefined labels
     image = pixels.iloc[index].values.reshape(28, 28)  # Reshape to 28x28
+    
     plt.imshow(image, cmap='gray')
-    plt.title(f"Label: {label}")
+    plt.title(f"Label: {numeric_label} (Letter: {letter_label})")
     plt.axis('off')
-    plt.show()
+    plt.draw()
 
-
-# Initialize the index
-index = [0]
-
+# Event handler for updating the plot
 def update_plot(event):
     if event.key == 'right':
         index[0] = (index[0] + 1) % len(labels)
     elif event.key == 'left':
         index[0] = (index[0] - 1) % len(labels)
+    plt.clf()  # Clear the previous plot
     visualize_test_case(index[0])
+    plt.pause(0.1)
 
-def visualize_test_case(index):
-    label = labels[index]
-    image = pixels.iloc[index].values.reshape(28, 28)
-    plt.imshow(image, cmap='gray')
-    plt.title(f"Label: {label}")
-    plt.axis('off')
-    plt.draw()
-
+# Set up the figure and connect the event
 fig, ax = plt.subplots()
 fig.canvas.mpl_connect('key_press_event', update_plot)
 visualize_test_case(index[0])
