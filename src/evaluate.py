@@ -53,12 +53,11 @@ def evaluate_model(model_path, test_path):
     visualize_metrics(precision, recall, f1, mAP)
 
 
-
 def visualize_metrics(precision, recall, f1, mAP):
     num_classes = len(precision)
-    classes = np.arange(num_classes)  # Numeric class indices for scatterplot
+    classes = np.arange(num_classes)  # Numeric class indices for bar graph
 
-    # Combine metrics for scatterplot
+    # Combine metrics for bar graph
     metrics = {
         "Precision": precision,
         "Recall": recall,
@@ -66,28 +65,26 @@ def visualize_metrics(precision, recall, f1, mAP):
     }
 
     plt.figure(figsize=(12, 8))
+    
+    bar_width = 0.2  # Width of each bar
+    class_labels = [f"Class {i}" for i in classes]
 
-    # Scatterplot with regression for each metric
     for idx, (metric_name, values) in enumerate(metrics.items()):
-        plt.subplot(3, 1, idx + 1)  # Create subplots for each metric
+        # Calculate positions for bar placement
+        bar_positions = classes + (idx - 1) * bar_width
 
-        # Scatterplot
-        plt.plot(classes, values, color='blue', label=f'{metric_name} (Data Points)')
+        # Create bar graph
+        plt.bar(bar_positions, values, width=bar_width, label=metric_name)
 
-        # Fit regression line
-        reg = LinearRegression().fit(classes.reshape(-1, 1), values)
-        regression_line = reg.predict(classes.reshape(-1, 1))
-        plt.plot(classes, regression_line, color='red', linestyle='--', label=f'{metric_name} (Regression)')
+    # Add mAP line
+    plt.axhline(mAP, color='gold', linestyle='--', label=f'mAP: {mAP:.2f}')
 
-        # Add labels and title
-        plt.ylabel("Score")
-        plt.title(f"{metric_name} by Class")
-        plt.xticks(classes, [f"Class {i}" for i in classes], rotation=45)
-        plt.axhline(mAP, color='gold', linestyle='--', label=f'mAP: {mAP:.2f}')
-
-        plt.legend()
-
+    # Add labels, title, and legend
+    plt.xticks(classes, class_labels, rotation=45)
     plt.xlabel("Classes")
+    plt.ylabel("Score")
+    plt.title("Evaluation Metrics by Class")
+    plt.legend()
     plt.tight_layout()
     plt.show()
 
