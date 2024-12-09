@@ -72,7 +72,7 @@ def visualize_metrics(precision, recall, f1, mAP):
         plt.subplot(3, 1, idx + 1)  # Create subplots for each metric
 
         # Scatterplot
-        plt.scatter(classes, values, color='blue', label=f'{metric_name} (Data Points)')
+        plt.plot(classes, values, color='blue', label=f'{metric_name} (Data Points)')
 
         # Fit regression line
         reg = LinearRegression().fit(classes.reshape(-1, 1), values)
